@@ -9,7 +9,7 @@ export async function getProducts(params = {}) {
     ...(search && { search }),
     ...(category1 && { category1 }),
     ...(category2 && { category2 }),
-    sort,
+    sort: sort.trim(), // 줄바꿈 문자 제거
   });
 
   const response = await fetch(`/api/products?${searchParams}`);
