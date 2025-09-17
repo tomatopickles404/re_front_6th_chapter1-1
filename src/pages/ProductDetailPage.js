@@ -7,6 +7,7 @@ import { ProductQuantitySelector } from "../components/ProductQuantitySelector.j
 import { ProductActionButtons } from "../components/ProductActionButtons.js";
 import { RelatedProducts } from "../components/RelatedProducts.js";
 import { productDetailStore } from "../stores/productDetailStore.js";
+import { routeContextService } from "../services/routeContextService.js";
 
 function renderLoading() {
   return /* HTML */ `
@@ -63,8 +64,8 @@ export function initializeProductDetailPage() {
   // 장바구니 데이터 로드
   cartStore.loadFromLocalStorage();
 
-  // URL에서 productId 추출 (window.routeParams 사용)
-  const productId = window.routeParams?.productId;
+  // 라우트 컨텍스트 서비스에서 productId 추출
+  const productId = routeContextService.getParam("productId");
 
   if (productId) {
     // 렌더링 콜백 설정
@@ -73,8 +74,6 @@ export function initializeProductDetailPage() {
   } else {
     console.error("Product ID not found in route params");
   }
-
-  // 이벤트 리스너는 render 함수에서 설정됨
 }
 
 function setupEventListeners() {

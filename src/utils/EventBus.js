@@ -39,21 +39,13 @@ class EventBus {
     delete this.events[event];
   }
 
-  // 모든 이벤트 구독 해제
   clear() {
     this.events = {};
   }
 
-  // 이벤트 리스너 수 확인
   getListenerCount(event) {
     return this.events[event] ? this.events[event].length : 0;
   }
 }
 
-// 싱글톤 인스턴스 생성
 export const eventBus = new EventBus();
-
-// 전역으로 노출 (개발 편의성)
-if (typeof window !== "undefined") {
-  window.eventBus = eventBus;
-}

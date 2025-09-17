@@ -1,4 +1,5 @@
 import { getAppPath, getFullPath } from "../utils/path.js";
+import { routeContextService } from "../services/routeContextService.js";
 
 export function Router() {
   const routes = {};
@@ -54,8 +55,8 @@ export function Router() {
     if (match) {
       const { route, params } = match;
 
-      // 전역 파라미터 설정 (컴포넌트에서 사용할 수 있도록)
-      window.routeParams = params;
+      // 라우트 컨텍스트 서비스를 통한 파라미터 설정
+      routeContextService.setRouteContext(path, params);
 
       document.getElementById("root").innerHTML = route.component();
 

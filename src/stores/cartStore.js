@@ -1,8 +1,19 @@
 import { toastService } from "../services/toastService.js";
+import { STORAGE_KEYS } from "../constants/index.js";
+import { storeEventService } from "../services/storeEventService.js";
+import { eventBus } from "../utils/EventBus.js";
 
 export const cartStore = {
   state: {
     items: [],
+  },
+
+  // 이벤트 리스너 설정
+  init() {
+    // 카운트 요청 이벤트 처리
+    eventBus.on("cart:requestCount", () => {
+      eventBus.emit("cart:countRequested", this.getCartCount());
+    });
   },
 
   getCartCount() {
@@ -19,6 +30,9 @@ export const cartStore = {
     this.saveToLocalStorage();
     this.updateCartBadge();
     toastService.show("장바구니에 추가되었습니다", "success");
+
+    // 이벤트 발행으로 다른 Store들에게 알림
+    storeEventService.emitCartAdded(product);
   },
 
   removeFromCart(productId) {
@@ -28,6 +42,8 @@ export const cartStore = {
     this.updateCartBadge();
     if (item) {
       toastService.show(`${item.title}이(가) 장바구니에서 삭제되었습니다`, "info");
+      // 이벤트 발행으로 다른 Store들에게 알림
+      storeEventService.emitCartRemoved(item);
     }
   },
 
@@ -48,6 +64,8 @@ export const cartStore = {
     this.updateCartBadge();
     if (itemCount > 0) {
       toastService.show("장바구니가 비워졌습니다", "info");
+      // 이벤트 발행으로 다른 Store들에게 알림
+      storeEventService.emitCartCleared();
     }
   },
 
@@ -65,11 +83,11 @@ export const cartStore = {
   },
 
   saveToLocalStorage() {
-    localStorage.setItem("shopping_cart", JSON.stringify(this.state.items));
+    localStorage.setItem(STORAGE_KEYS.CART, JSON.stringify(this.state.items));
   },
 
   loadFromLocalStorage() {
-    const savedCart = localStorage.getItem("shopping_cart");
+    const savedCart = localStorage.getItem(STORAGE_KEYS.CART);
     if (savedCart) {
       this.state.items = JSON.parse(savedCart);
     }
@@ -104,7 +122,10 @@ export const cartStore = {
   // 테스트를 위한 완전한 상태 초기화
   clearAll() {
     this.state.items = [];
-    localStorage.removeItem("shopping_cart");
+    localStorage.removeItem(STORAGE_KEYS.CART);
     this.updateCartBadge();
   },
 };
+
+// Store 초기화
+cartStore.init();

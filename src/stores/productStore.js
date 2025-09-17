@@ -1,6 +1,8 @@
 import { getProducts } from "../api/productApi.js";
 import { getQueryParams, setQueryParams } from "../utils/urlParams.js";
 import { isTestEnvironment } from "../utils/isTestEnvironment.js";
+import { PRODUCT } from "../constants/index.js";
+import { storeEventService } from "../services/storeEventService.js";
 
 export const productStore = {
   state: {
@@ -9,12 +11,12 @@ export const productStore = {
     error: null,
     totalCount: 0,
     filters: {
-      page: 1,
-      limit: 20,
+      page: PRODUCT.DEFAULT_PAGE,
+      limit: PRODUCT.DEFAULT_LIMIT,
       search: "",
       category1: "",
       category2: "",
-      sort: "price_asc",
+      sort: PRODUCT.DEFAULT_SORT,
     },
   },
 
@@ -36,6 +38,9 @@ export const productStore = {
     } finally {
       this.state.isLoading = false;
       this.render();
+
+      // 이벤트 발행으로 다른 Store들에게 알림
+      storeEventService.emitProductLoaded(this.state.products);
     }
   },
 
@@ -49,6 +54,9 @@ export const productStore = {
     this.state.filters = { ...this.state.filters, ...newFilters, page: 1 };
     setQueryParams(this.state.filters);
     this.fetchProducts();
+
+    // 이벤트 발행으로 다른 Store들에게 알림
+    storeEventService.emitProductFilterChanged(this.state.filters);
   },
 
   reset() {
@@ -57,12 +65,12 @@ export const productStore = {
     this.state.error = null;
     this.state.totalCount = 0;
     this.state.filters = {
-      page: 1,
-      limit: 20,
+      page: PRODUCT.DEFAULT_PAGE,
+      limit: PRODUCT.DEFAULT_LIMIT,
       search: "",
       category1: "",
       category2: "",
-      sort: "price_asc",
+      sort: PRODUCT.DEFAULT_SORT,
       ...getQueryParams(),
     };
   },

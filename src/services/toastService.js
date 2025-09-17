@@ -1,3 +1,5 @@
+import { UI } from "../constants/index.js";
+
 export const toastService = {
   show(message, type = "success") {
     // 기존 토스트 제거
@@ -39,12 +41,12 @@ export const toastService = {
 
     document.body.appendChild(toast);
 
-    // 3초 후 자동 제거
+    // 자동 제거 (상수 사용)
     const autoRemoveTimer = setTimeout(() => {
       if (toast.parentNode) {
         toast.remove();
       }
-    }, 3000);
+    }, UI.TOAST_AUTO_REMOVE_DELAY_MS);
 
     // 닫기 버튼 클릭 시 타이머 취소
     closeButton.addEventListener("click", () => {
