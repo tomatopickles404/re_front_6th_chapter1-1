@@ -61,15 +61,20 @@ export function ProductDetailPage() {
 }
 
 export function initializeProductDetailPage() {
+  console.log("ProductDetailPage 초기화 시작");
+
   // 장바구니 데이터 로드
   cartStore.loadFromLocalStorage();
 
   // 라우트 컨텍스트 서비스에서 productId 추출
   const productId = routeContextService.getParam("productId");
+  console.log("현재 라우트 파라미터:", routeContextService.getCurrentParams());
+  console.log("추출된 productId:", productId);
 
   if (productId) {
     // 렌더링 콜백 설정
     productDetailStore.render = render;
+    console.log("상품 상세 정보 요청:", productId);
     productDetailStore.fetchProductDetail(productId);
   } else {
     console.error("Product ID not found in route params");

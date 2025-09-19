@@ -89,7 +89,14 @@ export const cartStore = {
   loadFromLocalStorage() {
     const savedCart = localStorage.getItem(STORAGE_KEYS.CART);
     if (savedCart) {
-      this.state.items = JSON.parse(savedCart);
+      try {
+        const parsedItems = JSON.parse(savedCart);
+        // 배열인지 확인하고, 아니면 빈 배열로 초기화
+        this.state.items = Array.isArray(parsedItems) ? parsedItems : [];
+      } catch (error) {
+        console.error("장바구니 데이터 파싱 오류:", error);
+        this.state.items = [];
+      }
     }
   },
 
@@ -129,3 +136,4 @@ export const cartStore = {
 
 // Store 초기화
 cartStore.init();
+cartStore.loadFromLocalStorage();

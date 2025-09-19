@@ -1,5 +1,4 @@
 import { createInfiniteScrollObserver } from "../utils/createInfiniteScrollObserver.js";
-import { setupHeaderEventListeners } from "../components/Header.js";
 import { isTestEnvironment } from "../utils/isTestEnvironment.js";
 import { productStore } from "../stores/productStore.js";
 import { cartStore } from "../stores/cartStore.js";
@@ -77,117 +76,7 @@ export function initializeProductListPage() {
   cartStore.updateCartBadge();
 }
 
-function setupEventListeners() {
-  const { error, filters } = productStore.state;
-
-  if (error) {
-    document.querySelector("#retry-button")?.addEventListener("click", () => productStore.fetchProducts());
-  }
-
-  // Header 이벤트 리스너 설정
-  setupHeaderEventListeners();
-
-  const searchInput = document.querySelector("#search-input");
-  const performSearch = () => {
-    filters.page = 1;
-    productStore.updateFilters({ search: filters.search });
-  };
-
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      filters.search = e.target.value.trim();
-    });
-    searchInput.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        performSearch();
-      }
-    });
-  }
-
-  document.querySelector("#limit-select")?.addEventListener("change", (e) => {
-    productStore.updateFilters({ limit: Number(e.target.value) });
-  });
-
-  document.querySelector("#sort-select")?.addEventListener("change", (e) => {
-    productStore.updateFilters({ sort: e.target.value });
-  });
-
-  // 카테고리 필터 버튼 클릭 이벤트
-  document.querySelectorAll(".category1-filter-btn").forEach((button) => {
-    button.addEventListener("click", (e) => {
-      e.preventDefault();
-      const category1 = button.getAttribute("data-category1");
-      productStore.updateFilters({ category1, category2: "" });
-    });
-  });
-
-  // 2차 카테고리 필터 버튼 클릭 이벤트
-  document.querySelectorAll(".category2-filter-btn").forEach((button) => {
-    button.addEventListener("click", (e) => {
-      e.preventDefault();
-      const category2 = button.getAttribute("data-category2");
-      productStore.updateFilters({ category2 });
-    });
-  });
-
-  // 전체 카테고리 리셋 버튼 클릭 이벤트
-  document.querySelector("[data-breadcrumb='reset']")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    productStore.updateFilters({ category1: "", category2: "" });
-  });
-
-  // 브레드크럼 카테고리 클릭 이벤트
-  document.querySelector("[data-breadcrumb='category1']")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    const category1 = e.target.textContent;
-    productStore.updateFilters({ category1, category2: "" });
-  });
-
-  document.querySelector("[data-breadcrumb='category2']")?.addEventListener("click", (e) => {
-    e.preventDefault();
-    const category2 = e.target.textContent;
-    productStore.updateFilters({ category2 });
-  });
-
-  // 장바구니 버튼 클릭 이벤트
-  document.querySelectorAll(".add-to-cart-btn").forEach((button) => {
-    button.addEventListener("click", (e) => {
-      e.preventDefault();
-      const productId = button.getAttribute("data-product-id");
-      const productCard = button.closest(".product-card");
-      const product = {
-        productId,
-        title: productCard.querySelector("h3").textContent,
-        brand: productCard.querySelector("p").textContent,
-        image: productCard.querySelector("img").src,
-        lprice: parseInt(productCard.querySelector(".text-lg").textContent.replace(/[^0-9]/g, "")),
-        quantity: 1,
-      };
-      cartStore.addToCart(product);
-    });
-  });
-
-  // 상품 클릭 이벤트 (이미지, 정보 영역)
-  document.querySelectorAll(".product-image, .product-info").forEach((element) => {
-    element.addEventListener("click", (e) => {
-      e.preventDefault();
-      const productId = element.dataset.productId;
-
-      // 현재 정렬 상태를 URL에 포함
-      const currentParams = new URLSearchParams(window.location.search);
-      const sort = currentParams.get("sort");
-      const queryString = sort ? `?sort=${sort}` : "";
-
-      // SPA 방식으로 상세 페이지로 이동
-      window.history.pushState({}, "", `/product/${productId}${queryString}`);
-      window.dispatchEvent(new Event("popstate"));
-    });
-  });
-}
-
 function render() {
   document.getElementById("root").innerHTML = ProductListPage();
-  setupEventListeners();
   setupInfiniteScrollObserver();
 }

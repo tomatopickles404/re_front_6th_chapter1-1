@@ -1,18 +1,21 @@
-import { Router } from "./router/index.js";
+import { router } from "./router/index.js";
 import { routes } from "./router/routes.js";
 import { isTestEnvironment } from "./utils/isTestEnvironment.js";
+import { registerAllEvents } from "./services/eventService.js";
 
 const enableMocking = () =>
   import("./mocks/browser.js").then(({ worker, workerOptions }) => worker.start(workerOptions));
 
-export const router = Router();
-
 function main() {
-  routes.forEach((route) => {
-    router.registerRoute(route.path, route.component, route.initializer);
+  // 이벤트 등록
+  registerAllEvents();
+
+  // 라우트 등록
+  routes.forEach(({ path, component, initializer }) => {
+    router.registerRoute(path, component, initializer);
   });
 
-  router.router();
+  router.navigate();
 }
 
 // 애플리케이션 시작

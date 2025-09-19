@@ -233,119 +233,10 @@ export function CartModal() {
   `;
 }
 
-export function setupCartModalEventListeners() {
-  // 모달 닫기 버튼
-  document.querySelector("#cart-modal-close-btn")?.addEventListener("click", () => {
-    closeCartModal();
-  });
-
-  // 배경 클릭으로 모달 닫기
-  document.querySelector(".cart-modal-overlay")?.addEventListener("click", (e) => {
-    if (e.target.classList.contains("cart-modal-overlay")) {
-      closeCartModal();
-    }
-  });
-
-  // ESC 키로 모달 닫기
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && document.querySelector(".cart-modal-overlay")) {
-      closeCartModal();
-    }
-  });
-
-  // 전체 선택 체크박스
-  document.querySelector("#cart-modal-select-all-checkbox")?.addEventListener("change", (e) => {
-    const checkboxes = document.querySelectorAll(".cart-item-checkbox");
-    checkboxes.forEach((checkbox) => {
-      checkbox.checked = e.target.checked;
-    });
-  });
-
-  // 개별 상품 체크박스
-  document.querySelectorAll(".cart-item-checkbox").forEach((checkbox) => {
-    checkbox.addEventListener("change", () => {
-      updateSelectAllCheckbox();
-    });
-  });
-
-  // 수량 증가 버튼
-  document.querySelectorAll(".quantity-increase-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const productId = btn.dataset.productId;
-      const item = cartStore.state.items.find((item) => item.productId === productId);
-      if (item) {
-        cartStore.updateQuantity(productId, item.quantity + 1);
-        // 모달 다시 렌더링하여 최신 상태 반영
-        setTimeout(() => renderCartModal(), 0);
-      }
-    });
-  });
-
-  // 수량 감소 버튼
-  document.querySelectorAll(".quantity-decrease-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const productId = btn.dataset.productId;
-      const item = cartStore.state.items.find((item) => item.productId === productId);
-      if (item && item.quantity > 1) {
-        cartStore.updateQuantity(productId, item.quantity - 1);
-        // 모달 다시 렌더링하여 최신 상태 반영
-        setTimeout(() => renderCartModal(), 0);
-      }
-    });
-  });
-
-  // 수량 입력 필드
-  document.querySelectorAll(".quantity-input").forEach((input) => {
-    input.addEventListener("change", (e) => {
-      const productId = e.target.dataset.productId;
-      const quantity = parseInt(e.target.value) || 1;
-      cartStore.updateQuantity(productId, quantity);
-      // 모달 다시 렌더링하여 최신 상태 반영
-      setTimeout(() => renderCartModal(), 0);
-    });
-  });
-
-  // 삭제 버튼
-  document.querySelectorAll(".cart-item-remove-btn").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const productId = btn.dataset.productId;
-      cartStore.removeFromCart(productId);
-      // 모달 다시 렌더링하여 최신 상태 반영
-      setTimeout(() => renderCartModal(), 0);
-    });
-  });
-
-  // 전체 비우기 버튼
-  document.querySelector("#cart-modal-clear-cart-btn")?.addEventListener("click", () => {
-    cartStore.clearCart();
-    closeCartModal();
-  });
-
-  // 구매하기 버튼
-  document.querySelector("#cart-modal-checkout-btn")?.addEventListener("click", () => {
-    // 구매 로직 구현 (현재는 모달만 닫기)
-    closeCartModal();
-  });
-}
-
-function updateSelectAllCheckbox() {
-  const checkboxes = document.querySelectorAll(".cart-item-checkbox");
-  const selectAllCheckbox = document.querySelector("#cart-modal-select-all-checkbox");
-
-  if (checkboxes.length === 0) return;
-
-  const allChecked = Array.from(checkboxes).every((checkbox) => checkbox.checked);
-  const someChecked = Array.from(checkboxes).some((checkbox) => checkbox.checked);
-
-  selectAllCheckbox.checked = allChecked;
-  selectAllCheckbox.indeterminate = someChecked && !allChecked;
-}
-
 export function openCartModal() {
   const modalContainer = document.createElement("div");
   modalContainer.id = "cart-modal-container";
   document.body.appendChild(modalContainer);
-
   renderCartModal();
 }
 
@@ -360,6 +251,6 @@ export function renderCartModal() {
   const modalContainer = document.getElementById("cart-modal-container");
   if (modalContainer) {
     modalContainer.innerHTML = CartModal();
-    setupCartModalEventListeners();
+    // 🚫 setupCartModalEventListeners() 제거 - 이벤트 서비스가 처리
   }
 }
