@@ -93,30 +93,123 @@ export function registerProductEvents() {
   });
 }
 
+export function registerProductDetailEvents() {
+  // 상품 상세 페이지에서 장바구니 추가
+  addEvent("click", "#add-to-cart-btn", (e) => {
+    const productId = e.target.dataset.productId;
+    const quantityInput = document.getElementById("quantity-input");
+    const quantity = quantityInput ? parseInt(quantityInput.value) : 1;
+
+    if (!productId) return;
+
+    // 상품 정보는 productDetailStore에서 가져와야 함
+    // 현재는 간단히 productId만으로 처리
+    const product = {
+      productId,
+      quantity: quantity,
+    };
+
+    console.log("🛒 상품 상세 페이지에서 장바구니 추가:", product);
+    cartStore.addToCart(product);
+  });
+
+  // 상품 상세 페이지에서 수량 증가
+  addEvent("click", "#quantity-increase", () => {
+    const input = document.getElementById("quantity-input");
+    if (input) {
+      const max = parseInt(input.getAttribute("max")) || 100;
+      input.value = Math.min(max, parseInt(input.value) + 1);
+    }
+  });
+
+  // 상품 상세 페이지에서 수량 감소
+  addEvent("click", "#quantity-decrease", () => {
+    const input = document.getElementById("quantity-input");
+    if (input) {
+      input.value = Math.max(1, parseInt(input.value) - 1);
+    }
+  });
+}
+
 export function registerHeaderEvents() {
   // 장바구니 아이콘 클릭
-  addEvent("click", "#cart-icon-btn", () => {
+  addEvent("click", "#cart-icon-btn", (e) => {
+    console.log("🛒 장바구니 아이콘 클릭됨", e.target);
+    e.preventDefault();
+    e.stopPropagation();
     openCartModal();
   });
 }
 
 export function registerCartEvents() {
-  // 장바구니 추가
+  // 장바구니 추가 (상품 목록에서)
   addEvent("click", ".add-to-cart-btn", (e) => {
+    console.log("🛒 장바구니 추가 버튼 클릭됨", e.target);
     e.preventDefault();
-    const productId = e.target.dataset.productId;
-    const productCard = e.target.closest(".product-card");
 
-    if (productCard) {
-      const product = {
-        productId,
-        title: productCard.querySelector("h3").textContent,
-        brand: productCard.querySelector("p").textContent,
-        image: productCard.querySelector("img").src,
-        lprice: parseInt(productCard.querySelector(".text-lg").textContent.replace(/[^0-9]/g, "")),
-        quantity: 1,
-      };
-      cartStore.addToCart(product);
+    const productId = e.target.dataset.productId;
+    console.log("🛒 상품 ID:", productId);
+    if (!productId) return;
+
+    // 상품 정보 찾기
+    const productCard = e.target.closest(".product-card");
+    if (!productCard) return;
+
+    const product = {
+      productId,
+      title: productCard.querySelector("h3").textContent,
+      brand: productCard.querySelector("p").textContent,
+      image: productCard.querySelector("img").src,
+      lprice: parseInt(productCard.querySelector(".text-lg").textContent.replace(/[^0-9]/g, "")),
+      quantity: 1,
+    };
+
+    console.log("🛒 찾은 상품:", product);
+    cartStore.addToCart(product);
+    console.log("🛒 장바구니 추가 완료");
+  });
+
+  // 장바구니 수량 증가
+  addEvent("click", ".quantity-increase-btn", (e) => {
+    const target = e.target.closest("[data-product-id]");
+    const productId = target?.dataset.productId;
+    const quantityInput = target?.querySelector(".quantity-input");
+
+    if (productId && quantityInput) {
+      const newQuantity = parseInt(quantityInput.value) + 1;
+      quantityInput.value = newQuantity;
+      cartStore.updateQuantity(productId, newQuantity);
+    }
+  });
+
+  // 장바구니 수량 감소
+  addEvent("click", ".quantity-decrease-btn", (e) => {
+    const target = e.target.closest("[data-product-id]");
+    const productId = target?.dataset.productId;
+    const quantityInput = target?.querySelector(".quantity-input");
+
+    if (productId && quantityInput) {
+      const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
+      quantityInput.value = newQuantity;
+      cartStore.updateQuantity(productId, newQuantity);
+    }
+  });
+
+  // 장바구니 수량 직접 입력
+  addEvent("change", ".quantity-input", (e) => {
+    const productId = e.target.closest("[data-product-id]")?.dataset.productId;
+    const newQuantity = Math.max(1, parseInt(e.target.value) || 1);
+
+    if (productId) {
+      cartStore.updateQuantity(productId, newQuantity);
+    }
+  });
+
+  // 장바구니 개별 삭제
+  addEvent("click", ".cart-item-remove-btn", (e) => {
+    const productId = e.target.dataset.productId;
+    if (productId) {
+      cartStore.removeFromCart(productId);
     }
   });
 }
@@ -223,6 +316,7 @@ function refreshCartModal() {
 export function registerAllEvents() {
   console.log("이벤트 등록 시작");
   registerProductEvents();
+  registerProductDetailEvents();
   registerHeaderEvents();
   registerCartEvents();
   registerCartModalEvents();

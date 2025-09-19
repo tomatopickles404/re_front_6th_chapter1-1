@@ -1,17 +1,11 @@
 export function addEvent(eventType, selector, handler) {
   console.log(`이벤트 등록: ${eventType} -> ${selector}`);
   document.addEventListener(eventType, (e) => {
-    // 클릭된 요소가 선택자와 일치하는지 확인
-    if (e.target.matches && e.target.matches(selector)) {
-      console.log(`이벤트 매칭: ${selector}`, e.target);
+    // closest를 먼저 사용해서 이벤트 위임이 제대로 작동하도록 함
+    const target = e.target.closest(selector);
+    if (target) {
+      console.log(`이벤트 매칭: ${selector}`, target);
       handler(e);
-    } else {
-      // 부모 요소에서도 확인 (이벤트 위임)
-      const closest = e.target.closest(selector);
-      if (closest) {
-        console.log(`이벤트 매칭 (closest): ${selector}`, closest);
-        handler(e);
-      }
     }
   });
 }
