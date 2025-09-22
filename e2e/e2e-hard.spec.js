@@ -435,8 +435,9 @@ test.describe("E2E: 쇼핑몰 전체 사용자 시나리오", () => {
       // 첫 번째 상품 수량 증가
       await page.locator(".quantity-increase-btn").first().click();
 
-      // 총 금액 업데이트 확인
-      await expect(page.locator("#root")).toMatchAriaSnapshot(`
+      // 총 금액 업데이트 확인 (부가 검증) - 모달은 #root 바깥에 렌더되므로 모달을 대상으로 검증
+      await expect(page.locator(".cart-modal")).toBeVisible();
+      await expect(page.locator(".cart-modal")).toMatchAriaSnapshot(`
     - text: /총 금액 670원/
     - button "전체 비우기"
     - button "구매하기"

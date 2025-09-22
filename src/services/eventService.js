@@ -168,50 +168,6 @@ export function registerCartEvents() {
     cartStore.addToCart(product);
     console.log("🛒 장바구니 추가 완료");
   });
-
-  // 장바구니 수량 증가
-  addEvent("click", ".quantity-increase-btn", (e) => {
-    const target = e.target.closest("[data-product-id]");
-    const productId = target?.dataset.productId;
-    const quantityInput = target?.querySelector(".quantity-input");
-
-    if (productId && quantityInput) {
-      const newQuantity = parseInt(quantityInput.value) + 1;
-      quantityInput.value = newQuantity;
-      cartStore.updateQuantity(productId, newQuantity);
-    }
-  });
-
-  // 장바구니 수량 감소
-  addEvent("click", ".quantity-decrease-btn", (e) => {
-    const target = e.target.closest("[data-product-id]");
-    const productId = target?.dataset.productId;
-    const quantityInput = target?.querySelector(".quantity-input");
-
-    if (productId && quantityInput) {
-      const newQuantity = Math.max(1, parseInt(quantityInput.value) - 1);
-      quantityInput.value = newQuantity;
-      cartStore.updateQuantity(productId, newQuantity);
-    }
-  });
-
-  // 장바구니 수량 직접 입력
-  addEvent("change", ".quantity-input", (e) => {
-    const productId = e.target.closest("[data-product-id]")?.dataset.productId;
-    const newQuantity = Math.max(1, parseInt(e.target.value) || 1);
-
-    if (productId) {
-      cartStore.updateQuantity(productId, newQuantity);
-    }
-  });
-
-  // 장바구니 개별 삭제
-  addEvent("click", ".cart-item-remove-btn", (e) => {
-    const productId = e.target.dataset.productId;
-    if (productId) {
-      cartStore.removeFromCart(productId);
-    }
-  });
 }
 
 export function registerCartModalEvents() {
@@ -240,16 +196,19 @@ export function registerCartModalEvents() {
     checkboxes.forEach((checkbox) => {
       checkbox.checked = e.target.checked;
     });
+    updateRemoveSelectedButton();
   });
 
   // 개별 상품 체크박스
   addEvent("change", ".cart-item-checkbox", () => {
     updateSelectAllCheckbox();
+    updateRemoveSelectedButton();
   });
 
-  // 수량 증가 버튼
+  // 수량 증가 버튼 (모달 내)
   addEvent("click", ".quantity-increase-btn", (e) => {
-    const productId = e.target.dataset.productId;
+    const button = e.target.closest(".quantity-increase-btn");
+    const productId = button?.dataset.productId;
     const item = cartStore.state.items.find((item) => item.productId === productId);
     if (item) {
       cartStore.updateQuantity(productId, item.quantity + 1);
@@ -257,9 +216,10 @@ export function registerCartModalEvents() {
     }
   });
 
-  // 수량 감소 버튼
+  // 수량 감소 버튼 (모달 내)
   addEvent("click", ".quantity-decrease-btn", (e) => {
-    const productId = e.target.dataset.productId;
+    const button = e.target.closest(".quantity-decrease-btn");
+    const productId = button?.dataset.productId;
     const item = cartStore.state.items.find((item) => item.productId === productId);
     if (item && item.quantity > 1) {
       cartStore.updateQuantity(productId, item.quantity - 1);
@@ -267,7 +227,7 @@ export function registerCartModalEvents() {
     }
   });
 
-  // 수량 입력 필드
+  // 수량 직접 입력 (모달 내)
   addEvent("change", ".quantity-input", (e) => {
     const productId = e.target.dataset.productId;
     const quantity = parseInt(e.target.value) || 1;
@@ -275,7 +235,7 @@ export function registerCartModalEvents() {
     refreshCartModal();
   });
 
-  // 삭제 버튼
+  // 삭제 버튼 (모달 내)
   addEvent("click", ".cart-item-remove-btn", (e) => {
     const productId = e.target.dataset.productId;
     cartStore.removeFromCart(productId);
@@ -284,8 +244,20 @@ export function registerCartModalEvents() {
 
   // 전체 비우기 버튼
   addEvent("click", "#cart-modal-clear-cart-btn", () => {
+    console.log("🛒 전체 비우기 버튼 클릭됨");
     cartStore.clearCart();
-    closeCartModal();
+    console.log("🛒 장바구니 비우기 완료, 현재 상태:", cartStore.state);
+    refreshCartModal();
+  });
+
+  // 선택 삭제 버튼
+  addEvent("click", "#cart-modal-remove-selected-btn", () => {
+    const checkedBoxes = document.querySelectorAll(".cart-item-checkbox:checked");
+    checkedBoxes.forEach((checkbox) => {
+      const productId = checkbox.dataset.productId;
+      cartStore.removeFromCart(productId);
+    });
+    refreshCartModal();
   });
 
   // 구매하기 버튼
@@ -309,8 +281,23 @@ function updateSelectAllCheckbox() {
   selectAllCheckbox.indeterminate = someChecked && !allChecked;
 }
 
+function updateRemoveSelectedButton() {
+  const checkedBoxes = document.querySelectorAll(".cart-item-checkbox:checked");
+  const removeSelectedBtn = document.querySelector("#cart-modal-remove-selected-btn");
+
+  if (removeSelectedBtn) {
+    removeSelectedBtn.disabled = checkedBoxes.length === 0;
+  }
+}
+
 function refreshCartModal() {
-  setTimeout(() => renderCartModal(), 0);
+  console.log("🛒 refreshCartModal 호출됨");
+  setTimeout(() => {
+    console.log("🛒 모달 새로고침 실행");
+    renderCartModal();
+    // 모달 새로고침 후 버튼 상태 업데이트
+    updateRemoveSelectedButton();
+  }, 0);
 }
 
 export function registerAllEvents() {

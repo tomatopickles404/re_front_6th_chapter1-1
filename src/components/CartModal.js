@@ -211,6 +211,14 @@ export function CartModal() {
             <div class="space-y-2">
               <div class="flex gap-2">
                 <button
+                  id="cart-modal-remove-selected-btn"
+                  class="flex-1 bg-red-600 text-white py-2 px-4 rounded-md 
+                         hover:bg-red-700 transition-colors text-sm disabled:bg-gray-400 disabled:cursor-not-allowed"
+                  disabled
+                >
+                  선택 삭제
+                </button>
+                <button
                   id="cart-modal-clear-cart-btn"
                   class="flex-1 bg-gray-600 text-white py-2 px-4 rounded-md 
                          hover:bg-gray-700 transition-colors text-sm"
@@ -251,6 +259,5 @@ export function renderCartModal() {
   const modalContainer = document.getElementById("cart-modal-container");
   if (modalContainer) {
     modalContainer.innerHTML = CartModal();
-    // 🚫 setupCartModalEventListeners() 제거 - 이벤트 서비스가 처리
   }
 }
